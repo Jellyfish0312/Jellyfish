@@ -1,0 +1,206 @@
+import csv
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+import operator
+import matplotlib.ticker as mtick
+
+#读取自杀率数据集
+path = "suicide_data.csv"
+f = open(path, "r")
+reader = csv.reader(f)
+content = []
+for row in reader:
+    content.append(row)
+f.close()
+#print(content[:5])
+
+#探究哪种性别自杀率更高
+content_sex_dict = {}#建立以性别为键的字典，将数据按性别分类
+
+for row in content[1:]:
+    sex = str(row[2])
+    
+    if sex not in content_sex_dict.keys():
+        content_sex_dict[sex] = [row]
+    
+    else:
+        content_sex_dict[sex].append(row)
+
+mean_sex_rate = []
+
+for key, value in content_sex_dict.items():
+    sum_ = 0
+    for row in value:
+        sum_ += float(row[6])
+    mean_sex_rate.append((key, sum_/len(value)))
+
+print("1.The suicide rates of different sexes are:")
+print(mean_sex_rate)
+
+#将结果通过柱状图可视化
+a = plt.subplot(1, 1, 1)
+plt.xlabel('Sex')
+plt.ylabel('Suicide Rate')
+plt.title('The suicide rates of different sexes')
+
+plt.ylim=(0, 100)
+x1 = [10]
+x2 = [15]
+
+Y1 = [20.239328540618263]
+Y2 = [5.3928662832494885]
+
+plt.bar(x1, Y1, facecolor='red', width=5, label = 'male')
+plt.bar(x2, Y2, facecolor='green', width=5, label = 'female')
+
+plt.legend()
+
+plt.show()
+
+#探究哪种年龄段自杀率更高
+content_age_dict = {}
+
+for row in content[1:]:
+    age = str(row[3])
+    
+    if age not in content_age_dict.keys():
+        content_age_dict[age] = [row]
+    
+    else:
+        content_age_dict[age].append(row)
+
+mean_age_rate = []
+
+for key, value in content_age_dict.items():
+    sum_ = 0
+    for row in value:
+        sum_ += float(row[6])
+    mean_age_rate.append((key, sum_/len(value)))
+
+print("2.The suicide rates of different ages are:")
+print(mean_age_rate)
+
+#将结果通过气泡图可视化
+def DrawBubble(read_name):#气泡图
+    sns.set(style = "whitegrid")#设置样式
+    x = [x[0] for x in mean_age_rate]
+    y = [x[1] for x in mean_age_rate]
+    z = [x[1] for x in mean_age_rate]
+    cm = plt.cm.get_cmap('RdYlBu')
+    fig,ax = plt.subplots(figsize = (10,8))
+    bubble = ax.scatter(x, y , s = (z - np.min(z) + 0.1) * 500, c = z, cmap = cm, linewidth = 0.5, alpha = 0.5)
+    ax.grid()
+    fig.colorbar(bubble)
+    ax.set_xlabel('Ages', fontsize = 15)#X轴标签
+    ax.set_ylabel('Suicide Rate', fontsize = 15)#Y轴标签
+    plt.show()
+if __name__=='__main__':
+    DrawBubble("PeopleNumber.csv")#气泡图
+
+#探究哪个年份自杀率更高
+content_year_dict = {}
+
+for row in content[1:]:
+    year = int(row[1])
+    
+    if year not in content_year_dict.keys():
+        content_year_dict[year] = [row]
+    
+    else:
+        content_year_dict[year].append(row)
+
+mean_year_rate = []
+
+for key, value in content_year_dict.items():
+    sum_ = 0
+    y_=0
+    for row in value:
+        sum_ += float(row[6])
+        y_+=float(row[10])
+    mean_year_rate.append((key, sum_/len(value),y_/len(value)))
+
+mean_year_rate.sort(key=operator.itemgetter(0))#将结果按照年份排序方便后续作图
+print("3.The suicide rates of different years are:")
+print(mean_year_rate)
+
+#将结果通过折线图可视化
+def DrawLinechart():#画折线图
+    xdata = [x[0] for x in mean_year_rate]#获取年份数值
+    ydata = [x[1] for x in mean_year_rate]#获取该年对应的自杀率
+    fig = plt.figure()
+    colors = "#AA00FF"#定义颜色
+    label = "trend"#图例标签
+    plt.plot(xdata, ydata, c = colors, label = label)
+    plt.legend(loc = 'upper left')#图例的位置是左上
+    plt.xlabel('Year')#X轴标签
+    plt.ylabel('Rate')#Y轴标签
+    plt.title('The suicide rates of different years')#折线图标题
+    plt.show()
+if __name__=='__main__':
+    DrawLinechart()#画折线图
+    
+#全球各年的平均人均GDP变化
+def DrawLinechart():#画折线图
+    xdata = [x[0] for x in mean_year_rate]#获取年份数值
+    ydata = [x[2] for x in mean_year_rate]#获取该年对应的人均GDP
+    fig = plt.figure()
+    colors = "#F08080"#定义颜色
+    label = "trend"#图例标签
+    plt.plot(xdata, ydata, c = colors, label = label)
+    plt.legend(loc = 'upper left')#图例的位置是左上
+    plt.xlabel('Year')#X轴标签
+    plt.ylabel('GDP per capita')#Y轴标签
+    plt.title('The GDP per capita of different years')#折线图标题
+    plt.show()
+if __name__=='__main__':
+    DrawLinechart()#画折线图
+
+#探究哪个国家自杀率更高，这种趋势和其人均GDP是否相关
+content_country_dict = {}
+
+for row in content[1:]:
+    country = str(row[0])
+    
+    if country not in content_country_dict.keys():
+        content_country_dict[country] = [row]
+    
+    else:
+        content_country_dict[country].append(row)
+
+mean_country_rate = []
+
+for key, value in content_country_dict.items():
+    sum_ = 0
+    x_=0
+    for row in value:
+        sum_+= float(row[6])
+        x_+= float(row[10])
+    mean_country_rate.append((key, sum_/len(value),x_/len(value)))
+
+print("4.The suicide rates of different countries are:")
+print(mean_country_rate)
+
+#将结果通过叠加折线图和柱状图可视化
+a = [x[2] for x in mean_country_rate]  #数据
+b = [x[1] for x in mean_country_rate]
+l=[i for i in range(len(mean_country_rate))]
+
+fmt = '%.2f'
+yticks = mtick.FormatStrFormatter(fmt)
+lx=[x[0] for x in mean_country_rate]
+
+fig = plt.figure()  
+ax1 = fig.add_subplot(111)  
+ax1.plot(l, b,'or-',label=u'Suicide Rate');
+ax1.yaxis.set_major_formatter(yticks)
+ax1.legend(loc=1)
+ax1.set_ylim([0, 50]);
+ax1.set_ylabel('Suicide Rate');
+ax2 = ax1.twinx() # this is the important function  
+plt.bar(l,a,alpha=0.3,color='blue',label='GDP')  
+ax2.legend(loc=2)
+ax2.set_ylim([0,80000])  #设置y轴取值范围
+plt.legend(loc="upper left") 
+plt.xticks(l,lx)
+plt.show()
